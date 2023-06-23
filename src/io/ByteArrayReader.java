@@ -61,6 +61,21 @@ public class ByteArrayReader implements IReadable {
         trailingBits = 0;
         this.fileName = fileName;
     }
+    
+    /**
+     * The 2-args constructor for this object.
+     *
+     * @param readBytes the array of bytes to read from
+     * @param littleEndian Reads Little-endian if true
+     * @throws java.io.IOException
+     */
+    public ByteArrayReader(byte[] readBytes, boolean littleEndian) 
+            throws IOException {
+        this.byteArray = readBytes;
+        this.littleEndian = littleEndian;
+        filePosition = 0;
+        trailingBits = 0;
+    }
 
     /**
      * The 2-args constructor for this object. Reads the entire file into an
@@ -890,5 +905,15 @@ public class ByteArrayReader implements IReadable {
         }
 
         return value;
+    }
+    
+    public boolean isInBounds() {
+        boolean beforeLength = filePosition < byteArray.length;
+        
+        if (filePosition == byteArray.length) {
+            return (extraBitCount > 0);
+        }
+        
+        return beforeLength;
     }
 }
