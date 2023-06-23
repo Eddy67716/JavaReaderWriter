@@ -253,36 +253,30 @@ public class ByteArrayReader implements IReadable {
         bitOffset = (byte) (bits % 8);
 
         // deal with bit offsetted values
-        if (bitOffset != 0 || trailingBits != 0) {
+        if (trailingBits != 0) {
 
-            if (trailingBits != 0) {
+            if (trailingBits < 8) {
 
-                if (trailingBits < 8) {
+                if ((bitOffset > trailingBits)
+                        || (trailingBits > 0 && trailingBits + bits > 8
+                        && bitOffset != trailingBits)) {
 
-                    if ((bitOffset > trailingBits)
-                            || (trailingBits > 0 && trailingBits + bits > 8
-                            && bitOffset != trailingBits)) {
-
-                        // byte overflows the trailing bits
-                        byteOverflowing = true;
-                        leadingBits = trailingBits;
-                        if (bitOffset > leadingBits) {
-                            bytesToExtract++;
-                        }
-                    } else {
-                        // use to extract a few bits from extra bits
-                        trailingBits -= bitOffset;
-                        trailingBitsProcessed = true;
-                        if (trailingBits == 0) {
-                            byteAlign = true;
-                        }
+                    // byte overflows the trailing bits
+                    byteOverflowing = true;
+                    leadingBits = trailingBits;
+                    if (bitOffset > leadingBits) {
+                        bytesToExtract++;
                     }
+                } else {
+                    // use to extract a few bits from extra bits
+                    trailingBits -= bitOffset;
+                    trailingBitsProcessed = true;
+                    byteAlign = (trailingBits == 0);
                 }
-
-            } else {
-                trailingBits = (byte) (8 - bitOffset);
-                bytesToExtract++;
             }
+        } else if (bitOffset != 0) {
+            trailingBits = (byte) (8 - bitOffset);
+            bytesToExtract++;
         }
 
         // extract bytes
@@ -784,11 +778,10 @@ public class ByteArrayReader implements IReadable {
         for (int i = 0; i < extractedBytes.length; i++, filePosition++) {
             
             if (filePosition >= byteArray.length) {
-                throw new IndexOutOfBoundsException(
-                        "Index has reached the end of file");
+                extractedBytes[i] = 0;
+            } else {
+                extractedBytes[i] = byteArray[filePosition];
             }
-            
-            extractedBytes[i] = byteArray[filePosition];
 
             if (!ignoreOffset && extraBitCount != 0) {
                 extractedBytes[i]
