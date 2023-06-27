@@ -17,7 +17,7 @@ import java.util.List;
 
 /**
  *
- * @author Edward Jenkins
+ * @author Edward Jenkins © 2021-2023
  */
 public class ByteArrayWriter implements IWritable {
 

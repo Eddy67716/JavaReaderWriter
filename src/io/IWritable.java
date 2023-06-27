@@ -8,7 +8,7 @@ import java.io.IOException;
 
 /**
  *
- * @author Edward Jenkins
+ * @author Edward Jenkins © 2021-2023
  */
 public interface IWritable {
     

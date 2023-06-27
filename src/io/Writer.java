@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets;
 
 /**
  *
- * @author Edward Jenkins © Edward Jenkins 2021-2023
+ * @author Edward Jenkins © 2021-2023
  */
 public class Writer implements IWritable {
 
