@@ -34,7 +34,7 @@ public class IOTest {
     private static int uShort1 = 2544;
     private static int uShort2 = 32769;
     private static int threeByteInt = 8000000;
-    private static long fortyEightBitValue = 233474976711655l;
+    private static long fortyEightBitValue = 233474976711655L;
     private static byte oneBitValue = 1;
     private static byte twoBitValueOne = 3;
     private static byte twoBitValueTwo = 2;
@@ -71,7 +71,7 @@ public class IOTest {
         try {
 
             // write
-            IWritable writer = new ByteArrayWriter("bits.dat", endianess);
+            IWritable writer = new Writer("bits.dat", endianess);
 
             writer.writeUTF8String(string1);
             writer.writeShort((short) uShort1);
