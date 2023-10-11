@@ -26,6 +26,28 @@ public interface IReadable {
      * @param littleEndian Little-endian if true
      */
     public void setLittleEndian(boolean littleEndian);
+    
+    /**
+     * Starts saving a check byte stream that can be used for 
+     * CRC or other checks.
+     */
+    public void buildCheckByteStream();
+    
+    /**
+     * Gets the check byte stream that has been saved.
+     * @return the check byte stream
+     */
+    public byte[] getCheckByteStream();
+    
+    /**
+     * Resets the check byte stream.
+     */
+    public void resetCheckByteStream();
+    
+    /**
+     * End the check byte stream.
+     */
+    public void endCheckByteStream();
 
     /**
      * Resets the file position.

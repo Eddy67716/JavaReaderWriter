@@ -1159,6 +1159,11 @@ public class RandomReaderWriter implements IReadable, IWritable {
 
         // get byte
         byte convertedByte = raf.readByte();
+        
+        // append byte to check byte stream
+        if (buildingCheckByteStream && checkByteStream != null) {
+            checkByteStream.add(convertedByte);
+        }
 
         // bit shift to right position if there are traling bits
         if (extraBitCount != 0) {
@@ -1293,6 +1298,13 @@ public class RandomReaderWriter implements IReadable, IWritable {
 
         // extract bytes
         raf.read(extractedBytes, 0, bytesToExtract);
+        
+        // append bytes to check byte stream
+        if (buildingCheckByteStream && checkByteStream != null) {
+            for (int i = 0; i < extractedBytes.length; i++) {
+                checkByteStream.add(extractedBytes[i]);
+            }
+        }
 
         // deal with bit offset if any
         if (extraBitCount != 0) {
@@ -1326,6 +1338,13 @@ public class RandomReaderWriter implements IReadable, IWritable {
 
         // extract bytes
         raf.read(extractedBytes, 0, bytesToExtract);
+        
+        // append bytes to check byte stream
+        if (buildingCheckByteStream && checkByteStream != null) {
+            for (int i = 0; i < extractedBytes.length; i++) {
+                checkByteStream.add(extractedBytes[i]);
+            }
+        }
 
         // deal with bit offset if any
         if (!ignoreOffset && extraBitCount != 0) {

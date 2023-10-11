@@ -12,6 +12,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  *
@@ -29,6 +31,10 @@ public class Reader implements IReadable {
     private String fileName;
     // stores if file is reading in little endian or not
     private boolean littleEndian;
+    // the check byte stream used if a portion of the file is needed
+    private List<Byte> checkByteStream;
+    // add bytes to check byte stream if true
+    private boolean buildingCheckByteStream;
     private byte[] convertBytes;
     // stores the position in the file
     private long filePosition;
@@ -118,6 +124,51 @@ public class Reader implements IReadable {
         this.dis = new DataInputStream(new BufferedInputStream(
                 new FileInputStream(fileName)));
         dis.skip(filePosition);
+    }
+
+    /**
+     * Starts saving a check byte stream that can be used for CRC or other
+     * checks.
+     */
+    @Override
+    public void buildCheckByteStream() {
+        buildingCheckByteStream = true;
+        checkByteStream = new LinkedList<>();
+    }
+
+    /**
+     * Gets the check byte stream that has been saved.
+     *
+     * @return the check byte stream
+     */
+    @Override
+    public byte[] getCheckByteStream() {
+
+        // byte arrary
+        byte[] returnByteStream = new byte[checkByteStream.size()];
+
+        // build loop
+        for (int i = 0; i < returnByteStream.length; i++) {
+            returnByteStream[i] = checkByteStream.get(i);
+        }
+
+        return returnByteStream;
+    }
+
+    /**
+     * Resets the check byte stream.
+     */
+    @Override
+    public void resetCheckByteStream() {
+        checkByteStream = new LinkedList<>();
+    }
+
+    /**
+     * End the check byte stream.
+     */
+    @Override
+    public void endCheckByteStream() {
+        buildingCheckByteStream = false;
     }
 
     /**
@@ -676,6 +727,11 @@ public class Reader implements IReadable {
 
         // get byte
         byte convertedByte = dis.readByte();
+        
+        // append byte to check byte stream
+        if (buildingCheckByteStream && checkByteStream != null) {
+            checkByteStream.add(convertedByte);
+        }
 
         // increment file position
         filePosition++;
@@ -724,6 +780,13 @@ public class Reader implements IReadable {
 
         // extract bytes
         dis.read(extractedBytes, 0, bytesToExtract);
+        
+        // append bytes to check byte stream
+        if (buildingCheckByteStream && checkByteStream != null) {
+            for (int i = 0; i < extractedBytes.length; i++) {
+                checkByteStream.add(extractedBytes[i]);
+            }
+        }
 
         // increment file pos by number of bytes read
         filePosition += bytesToExtract;
@@ -760,6 +823,13 @@ public class Reader implements IReadable {
 
         // extract bytes
         dis.read(extractedBytes, 0, bytesToExtract);
+        
+        // append bytes to check byte stream
+        if (buildingCheckByteStream && checkByteStream != null) {
+            for (int i = 0; i < extractedBytes.length; i++) {
+                checkByteStream.add(extractedBytes[i]);
+            }
+        }
 
         // increment file pos by number of bytes read
         filePosition += bytesToExtract;
@@ -814,6 +884,13 @@ public class Reader implements IReadable {
             dis.skip(bytes);
             filePosition += bytes;
             skipped = true;
+        }
+        
+        // append bytes to check byte stream
+        if (buildingCheckByteStream && checkByteStream != null) {
+            for (int i = 0; i < bytes; i++) {
+                checkByteStream.add((byte)0);
+            }
         }
 
         return skipped;
