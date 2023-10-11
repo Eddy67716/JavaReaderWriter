@@ -25,7 +25,7 @@ import java.io.IOException;
 public class IOTest {
 
     // values to write
-    private static boolean endianess = LITTLE_ENDIAN;
+    private static boolean endianess = BIG_ENDIAN;
     private static String string1 = "This is a string";
     private static byte byteValueOne = 127;
     private static byte byteValueTwo = -1;

@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  *
@@ -23,6 +25,10 @@ public class RandomReaderWriter implements IReadable, IWritable {
     private String fileName;
     // stores if file is reading in little endian or not
     private boolean littleEndian;
+    // the check byte stream used if a portion of the file is needed
+    private List<Byte> checkByteStream;
+    // add bytes to check byte stream if true
+    private boolean buildingCheckByteStream;
     // stores bytes to convert
     private byte[] convertBytes;
     // the extra bits that can't yet be written
@@ -105,6 +111,51 @@ public class RandomReaderWriter implements IReadable, IWritable {
         }
         raf.seek(filePosition);
     }
+    
+    /**
+     * Starts saving a check byte stream that can be used for CRC or other
+     * checks.
+     */
+    @Override
+    public void buildCheckByteStream() {
+        buildingCheckByteStream = true;
+        checkByteStream = new LinkedList<>();
+    }
+
+    /**
+     * Gets the check byte stream that has been saved.
+     *
+     * @return the check byte stream
+     */
+    @Override
+    public byte[] getCheckByteStream() {
+
+        // byte arrary
+        byte[] returnByteStream = new byte[checkByteStream.size()];
+
+        // build loop
+        for (int i = 0; i < returnByteStream.length; i++) {
+            returnByteStream[i] = checkByteStream.get(i);
+        }
+
+        return returnByteStream;
+    }
+
+    /**
+     * Resets the check byte stream.
+     */
+    @Override
+    public void resetCheckByteStream() {
+        checkByteStream = new LinkedList<>();
+    }
+
+    /**
+     * End the check byte stream.
+     */
+    @Override
+    public void endCheckByteStream() {
+        buildingCheckByteStream = false;
+    }
 
     /**
      * Writes a byte string to file.
@@ -122,6 +173,12 @@ public class RandomReaderWriter implements IReadable, IWritable {
             }
         } else {
             raf.writeBytes(outputString);
+            if (buildingCheckByteStream && checkByteStream != null) {
+                int stringLength = outputString.length();
+                for (int i = 0; i < stringLength; i++) {
+                    checkByteStream.add((byte) outputString.charAt(i));
+                }
+            }
         }
     }
 
@@ -1053,6 +1110,10 @@ public class RandomReaderWriter implements IReadable, IWritable {
         }
 
         raf.writeByte(value);
+        
+        if (buildingCheckByteStream && checkByteStream != null) {
+            checkByteStream.add(value);
+        }
     }
 
     /**
@@ -1192,6 +1253,13 @@ public class RandomReaderWriter implements IReadable, IWritable {
 
         // write the bytes
         raf.write(bytesToAppend, start, end);
+        
+        // append bytes to check byte stream
+        if (buildingCheckByteStream && checkByteStream != null) {
+            for (int i = start; i < end; i++) {
+                checkByteStream.add(bytesToAppend[i]);
+            }
+        }
     }
 
     /**
