@@ -35,6 +35,7 @@ public class Reader implements IReadable {
     private List<Byte> checkByteStream;
     // add bytes to check byte stream if true
     private boolean buildingCheckByteStream;
+    // stores currently read bytes
     private byte[] convertBytes;
     // stores the position in the file
     private long filePosition;
