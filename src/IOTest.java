@@ -180,7 +180,7 @@ public class IOTest {
 
         try {
             // read method variabes
-            IReadable reader = new ByteArrayReader("bits.dat", endianess);
+            IReadable reader = new Reader("bits.dat", endianess);
             String readString;
             long readValue;
             int readInt;
@@ -840,7 +840,7 @@ public class IOTest {
     }
 
     public static void testWrite() throws IOException {
-        Writer writer = new Writer("bits.dat");
+        IWritable writer = new Writer("bits.dat");
 
         writer.writeArbitraryBitValue(2, (byte) 2);
         writer.writeArbitraryBitValue(3, (byte) 4);
@@ -850,7 +850,7 @@ public class IOTest {
     }
 
     public static void testRead() throws IOException {
-        Reader reader = new Reader("bits.dat");
+        IReadable reader = new Reader("bits.dat");
 
         System.out.println(reader.getArbitraryBitValue((byte) 2, false));
         System.out.println(reader.getArbitraryBitValue((byte) 4, false));

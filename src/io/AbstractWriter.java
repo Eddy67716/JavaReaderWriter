@@ -1,38 +1,43 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ * Copyright (C) 2024 Edward Jenkins
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package io;
 
 import static io.IOMethods.reverseEndian;
+import static io.Writer.AND_VALUES;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
  *
- * @author Edward Jenkins © 2021-2023
+ * @author Edward Jenkins
  */
-public class ByteArrayWriter extends AbstractWriter {
-
-    // constants
-    public static final byte[] AND_VALUES = {0, 1, 3, 7, 15, 31, 63, 127};
-
+public abstract class AbstractWriter implements IWritable {
+    
     // instance variables
     // name of file
     private String fileName;
     // whether to write in little endian
     private boolean littleEndian;
-    // the data output stream
-    private DataOutputStream dos;
-    // the byte array to store data before writing it all
-    private List<Byte> byteArray;
     // the check byte stream used if a portion of the file is needed
     private List<Byte> checkByteStream;
     // add bytes to check byte stream if true
@@ -45,7 +50,7 @@ public class ByteArrayWriter extends AbstractWriter {
     private byte extraBitCount;
     // amount of extra offsetted bits
     private byte leadingBits;
-
+    
     /**
      * The 2-args constructor used to write a file with a file name string.
      *
@@ -53,15 +58,10 @@ public class ByteArrayWriter extends AbstractWriter {
      * @param littleEndian Writes little-endian values if true
      * @throws IOException Thrown if file is not found
      */
-    public ByteArrayWriter(String fileName, boolean littleEndian)
+    public AbstractWriter(String fileName, boolean littleEndian)
             throws IOException {
-        super(fileName, littleEndian);
-        dos = new DataOutputStream(new BufferedOutputStream(
-                new FileOutputStream(fileName)));
-        byteArray = new LinkedList<>();
-        this.littleEndian = littleEndian;
-        filePosition = dos.size();
         this.fileName = fileName;
+        this.littleEndian = littleEndian;
     }
 
     /**
@@ -71,21 +71,22 @@ public class ByteArrayWriter extends AbstractWriter {
      * @param fileName The name of the file to write to
      * @throws IOException Thrown if file is not found
      */
-    public ByteArrayWriter(String fileName)
+    public AbstractWriter(String fileName)
             throws IOException {
         this(fileName, false);
     }
-
+    
     /**
-     * The 1-arg constructor used to just build an array.
+     * The 1-arg constructor used to write a file with a file name string.
      *
-     * @param littleEndian The endieness of the array
+     * @param littleEndian Writes little-endian values if true
+     * @throws IOException Thrown if file is not found
      */
-    public ByteArrayWriter(boolean littleEndian) throws IOException {
-        super(littleEndian);
-        byteArray = new LinkedList<>();
+    public AbstractWriter(boolean littleEndian)
+            throws IOException {
+        this("", littleEndian);
     }
-
+    
     /**
      * Gets the file's position.
      *
@@ -164,7 +165,6 @@ public class ByteArrayWriter extends AbstractWriter {
         for (int i = 0; i < stringLength; i++) {
             writeByte((byte) outputString.charAt(i));
         }
-        filePosition += outputString.length();
     }
 
     /**
@@ -180,7 +180,6 @@ public class ByteArrayWriter extends AbstractWriter {
         for (int i = 0; i < stringLength; i++) {
             writeShort((short) outputString.charAt(i));
         }
-        filePosition += outputString.length() * 2;
     }
 
     /**
@@ -236,41 +235,36 @@ public class ByteArrayWriter extends AbstractWriter {
         if ((value >>> 63 & 1) == 1) {
 
             // bitshift backwards and forwards to set value to unsigned
-            value = value << (64 - bits);
-            value = value >>> (64 - bits);
+            value <<= (64 - bits);
+            value >>>= (64 - bits);
         }
 
         // deal with bit offsetted values
-        if (bitOffset != 0 || leadingBits != 0) {
+        if (leadingBits != 0) {
 
-            if (leadingBits != 0) {
+            trailingBits = leadingBits;
 
-                trailingBits = leadingBits;
+            leadingBits += bitOffset;
 
-                leadingBits += bitOffset;
+            if (leadingBits == 8) {
 
-                if (leadingBits == 8) {
+                // the bits will byte align
+                bytesToWrite++;
+                bitOffset = 0;
+                byteOverflowing = (bitsToWrite > leadingBits);
+            } else if ((leadingBits > 8)
+                    || (leadingBits > 0 && leadingBits
+                    + bitsToWrite > 8)) {
 
-                    // the bits will byte align
+                // append another byte
+                byteOverflowing = true;
+                if (leadingBits > 8) {
                     bytesToWrite++;
-                    bitOffset = 0;
-                    if (bitsToWrite > leadingBits) {
-                        byteOverflowing = true;
-                    }
-                } else if ((leadingBits > 8)
-                        || (leadingBits > 0 && leadingBits
-                        + bitsToWrite > 8)) {
-
-                    // append another byte
-                    byteOverflowing = true;
-                    if (leadingBits > 8) {
-                        bytesToWrite++;
-                    }
                 }
-
-            } else {
-                leadingBits = bitOffset;
             }
+
+        } else if (bitOffset != 0) {
+            leadingBits = bitOffset;
         }
 
         // build bytes to write
@@ -573,8 +567,8 @@ public class ByteArrayWriter extends AbstractWriter {
             value = manageBitOffset(value, leadingBits);
         }
 
-        byteArray.add(value);
-
+        this.writeByteToFile(value);
+        
         if (buildingCheckByteStream && checkByteStream != null) {
             checkByteStream.add(value);
         }
@@ -629,11 +623,11 @@ public class ByteArrayWriter extends AbstractWriter {
      *
      * @param bytesToAppend the byte array
      * @param start
-     * @param end
+     * @param length
      * @param ignoreOffset ignore the bit offset
      * @throws IOException
      */
-    private void appendBytes(byte[] bytesToAppend, int start, int end,
+    private void appendBytes(byte[] bytesToAppend, int start, int length,
             boolean ignoreOffset)
             throws IOException {
 
@@ -645,7 +639,7 @@ public class ByteArrayWriter extends AbstractWriter {
         }
 
         // adjust file position
-        filePosition += (end - start);
+        filePosition += (length - start);
 
         // if leadingBits, deal with them
         if (!ignoreOffset && leadingBits != 0) {
@@ -661,11 +655,11 @@ public class ByteArrayWriter extends AbstractWriter {
         }
 
         // write the bytes
-        for (int i = start; i < start + end; i++) {
-            byteArray.add(bytesToAppend[i]);
+        writeBytesToFile(bytesToAppend, start, length);
 
-            // append bytes to check byte stream
-            if (buildingCheckByteStream && checkByteStream != null) {
+        // append bytes to check byte stream
+        if (buildingCheckByteStream && checkByteStream != null) {
+            for (int i = start; i < length; i++) {
                 checkByteStream.add(bytesToAppend[i]);
             }
         }
@@ -676,13 +670,13 @@ public class ByteArrayWriter extends AbstractWriter {
      *
      * @param bytesToAppend the byte array
      * @param start
-     * @param end
+     * @param length
      * @throws IOException
      */
-    private void appendBytes(byte[] bytesToAppend, int start, int end)
+    private void appendBytes(byte[] bytesToAppend, int start, int length)
             throws IOException {
 
-        appendBytes(bytesToAppend, start, end, false);
+        appendBytes(bytesToAppend, start, length, false);
     }
 
     /**
@@ -703,62 +697,6 @@ public class ByteArrayWriter extends AbstractWriter {
         }
 
         return true;
-    }
-
-    /**
-     * Closes the file by writing any extra bits and byte aligning then closing
-     * the stream.
-     *
-     * @throws IOException
-     */
-    @Override
-    public void close() throws IOException {
-        byteAlign();
-        for (Byte writeByte : byteArray) {
-            dos.writeByte(writeByte);
-        }
-        byteArray = null;
-        dos.close();
-    }
-
-    /**
-     * Writes all bytes in the byte array and resets it
-     *
-     * @throws IOException
-     */
-    public void writeAndClearArray() throws IOException {
-        byteAlign();
-        for (Byte writeByte : byteArray) {
-            dos.writeByte(writeByte);
-        }
-        resetByteArray();
-        dos.close();
-    }
-
-    /**
-     * Extracts the array from the writer
-     *
-     * @return the extracted array
-     */
-    public byte[] extractArray() {
-        byte[] extractionArray = new byte[byteArray.size()];
-
-        Iterator listIterator = byteArray.iterator();
-
-        for (int i = 0; i < extractionArray.length; i++) {
-            if (listIterator.hasNext()) {
-                extractionArray[i] = (byte) listIterator.next();
-            }
-        }
-
-        return extractionArray;
-    }
-
-    /**
-     * Resets the byte array
-     */
-    public void resetByteArray() {
-        byteArray = new LinkedList<>();
     }
 
     /**
@@ -807,23 +745,14 @@ public class ByteArrayWriter extends AbstractWriter {
 
         return value;
     }
-
-    @Override
-    protected void writeByteToFile(byte byteToWrite) throws IOException {
-        this.byteArray.add(byteToWrite);
-    }
-
-    @Override
-    protected void writeBytesToFile(byte[] bytesToWrite) throws IOException {
-        for (byte byteToWrite : bytesToWrite) {
-            byteArray.add(byteToWrite);
-        }
-    }
     
-    protected void writeBytesToFile(byte[] bytesToWrite, int start, int length) 
-            throws IOException {
-        for (int i = start; i < start + length; i++) {
-            byteArray.add(bytesToWrite[i]);
-        }
-    }
+    
+    protected abstract void writeByteToFile(byte byteToWrite) 
+            throws IOException;
+    
+    protected abstract void writeBytesToFile(byte[] bytesToWrite) 
+            throws IOException;
+    
+    protected abstract void writeBytesToFile(byte[] bytesToWrite, int start, int length) 
+            throws IOException;
 }
