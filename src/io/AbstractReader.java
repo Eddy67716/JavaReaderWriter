@@ -842,7 +842,7 @@ public abstract class AbstractReader implements IReadable {
         boolean skipped = false;
 
         if (getAvailableBytes() > bytes) {
-            skipBytes(bytes);
+            skipBytes((int)bytes);
             filePosition += bytes;
             skipped = true;
         }
