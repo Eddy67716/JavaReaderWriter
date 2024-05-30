@@ -78,10 +78,10 @@ public class Reader extends AbstractReader {
      */
     @Override
     public void setFilePosition(long filePosition) throws IOException {
-        super.setFilePosition(0);
         this.dis = new DataInputStream(new BufferedInputStream(
                 new FileInputStream(getFileName())));
         dis.skip(filePosition);
+        super.setFilePosition(filePosition);
     }
 
     /**
