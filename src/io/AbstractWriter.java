@@ -39,7 +39,7 @@ public abstract class AbstractWriter implements IWritable {
     // whether to write in little endian
     private boolean littleEndian;
     // the check byte stream used if a portion of the file is needed
-    private List<Byte> checkByteStream;
+    private List<Byte> checkByteStreamList;
     // add bytes to check byte stream if true
     private boolean buildingCheckByteStream;
     // bytes written
@@ -87,6 +87,19 @@ public abstract class AbstractWriter implements IWritable {
         this("", littleEndian);
     }
     
+    // getters
+    public List<Byte> getCheckByteStreamList() {
+        return checkByteStreamList;
+    }
+
+    public boolean isBuildingCheckByteStream() {
+        return buildingCheckByteStream;
+    }
+
+    public byte getLeadingBits() {
+        return leadingBits;
+    }
+    
     /**
      * Gets the file's position.
      *
@@ -106,6 +119,22 @@ public abstract class AbstractWriter implements IWritable {
     public void setLittleEndian(boolean littleEndian) {
         this.littleEndian = littleEndian;
     }
+    
+    /**
+     * Increments the position of the file
+     */
+    protected void incrementFilePosition() {
+        filePosition++;
+    }
+    
+    /**
+     * Increments the position of the file
+     * 
+     * @param offset the amount to increment by
+     */
+    protected void incrementFilePosition(int offset) {
+        filePosition += offset;
+    }
 
     /**
      * Starts saving a check byte stream that can be used for CRC or other
@@ -114,7 +143,7 @@ public abstract class AbstractWriter implements IWritable {
     @Override
     public void buildCheckByteStream() {
         buildingCheckByteStream = true;
-        checkByteStream = new LinkedList<>();
+        checkByteStreamList = new LinkedList<>();
     }
 
     /**
@@ -126,11 +155,11 @@ public abstract class AbstractWriter implements IWritable {
     public byte[] getCheckByteStream() {
 
         // byte arrary
-        byte[] returnByteStream = new byte[checkByteStream.size()];
+        byte[] returnByteStream = new byte[checkByteStreamList.size()];
 
         // build loop
         for (int i = 0; i < returnByteStream.length; i++) {
-            returnByteStream[i] = checkByteStream.get(i);
+            returnByteStream[i] = checkByteStreamList.get(i);
         }
 
         return returnByteStream;
@@ -141,7 +170,7 @@ public abstract class AbstractWriter implements IWritable {
      */
     @Override
     public void resetCheckByteStream() {
-        checkByteStream = new LinkedList<>();
+        checkByteStreamList = new LinkedList<>();
     }
 
     /**
@@ -569,8 +598,8 @@ public abstract class AbstractWriter implements IWritable {
 
         this.writeByteToFile(value);
         
-        if (buildingCheckByteStream && checkByteStream != null) {
-            checkByteStream.add(value);
+        if (buildingCheckByteStream && checkByteStreamList != null) {
+            checkByteStreamList.add(value);
         }
 
         filePosition++;
@@ -658,9 +687,9 @@ public abstract class AbstractWriter implements IWritable {
         writeBytesToFile(bytesToAppend, start, length);
 
         // append bytes to check byte stream
-        if (buildingCheckByteStream && checkByteStream != null) {
+        if (buildingCheckByteStream && checkByteStreamList != null) {
             for (int i = start; i < length; i++) {
-                checkByteStream.add(bytesToAppend[i]);
+                checkByteStreamList.add(bytesToAppend[i]);
             }
         }
     }

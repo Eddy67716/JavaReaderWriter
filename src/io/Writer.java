@@ -25,24 +25,8 @@ public class Writer extends AbstractWriter {
     public static final byte[] AND_VALUES = {0, 1, 3, 7, 15, 31, 63, 127};
 
     // instance variables
-    // name of file
-    private String fileName;
-    // whether to write in little endian
-    private boolean littleEndian;
     // the data output stream
     private DataOutputStream dos;
-    // the check byte stream used if a portion of the file is needed
-    private List<Byte> checkByteStream;
-    // add bytes to check byte stream if true
-    private boolean buildingCheckByteStream;
-    // bytes written
-    private long filePosition;
-    // extra bits when writing non byte values
-    private byte extraBits;
-    // how many bits are in extra bits
-    private byte extraBitCount;
-    // amount of extra offsetted bits
-    private byte leadingBits;
 
     /**
      * The 2-args constructor used to write a file with a file name string.
@@ -56,7 +40,6 @@ public class Writer extends AbstractWriter {
         super(fileName, littleEndian);
         dos = new DataOutputStream(new BufferedOutputStream(
                 new FileOutputStream(fileName)));
-        filePosition = dos.size();
     }
 
     /**
@@ -80,20 +63,20 @@ public class Writer extends AbstractWriter {
     @Override
     public void writeByteString(String outputString) throws IOException {
 
-        if (leadingBits != 0) {
+        if (getLeadingBits() != 0) {
             int stringLength = outputString.length();
             for (int i = 0; i < stringLength; i++) {
                 writeByte((byte) outputString.charAt(i));
             }
         } else {
             dos.writeBytes(outputString);
-            if (buildingCheckByteStream && checkByteStream != null) {
+            if (isBuildingCheckByteStream() && getCheckByteStreamList() != null) {
                 int stringLength = outputString.length();
                 for (int i = 0; i < stringLength; i++) {
-                    checkByteStream.add((byte) outputString.charAt(i));
+                    getCheckByteStreamList().add((byte) outputString.charAt(i));
                 }
             }
-            filePosition += outputString.length();
+            incrementFilePosition(outputString.length());
         }
     }
 
@@ -106,14 +89,14 @@ public class Writer extends AbstractWriter {
     @Override
     public void writeCharString(String outputString) throws IOException {
 
-        if (leadingBits != 0) {
+        if (getLeadingBits() != 0) {
             int stringLength = outputString.length();
             for (int i = 0; i < stringLength; i++) {
                 writeShort((short) outputString.charAt(i));
             }
         } else {
             dos.writeChars(outputString);
-            filePosition += outputString.length() * 2;
+            incrementFilePosition(outputString.length() * 2);
         }
     }
     
