@@ -133,7 +133,7 @@ public class ByteArrayReader extends AbstractReader {
     }
 
     @Override
-    protected void skipBytes(int bytes) throws IOException {
+    protected void skipFileBytes(long bytes) throws IOException {
         setFilePosition(getFilePosition() + bytes);
     }
 }

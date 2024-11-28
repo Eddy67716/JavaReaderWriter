@@ -248,7 +248,7 @@ public abstract class AbstractReader implements IReadable {
         for (byte aByte : readBytes) {
 
             // convert byte to char
-            aChar = (char) aByte;
+            aChar = (char) (aByte & 0xff);
 
             // append aChar to the string builder
             byteStringBuilder.append(aChar);
@@ -1014,5 +1014,5 @@ public abstract class AbstractReader implements IReadable {
     
     protected abstract int getAvailableBytes() throws IOException ;
     
-    protected abstract void skipBytes(int bytes) throws IOException ;
+    protected abstract void skipFileBytes(long bytes) throws IOException ;
 }

@@ -110,7 +110,7 @@ public class Reader extends AbstractReader {
     }
 
     @Override
-    protected void skipBytes(int bytes) throws IOException {
-        dis.skipBytes(bytes);
+    protected void skipFileBytes(long bytes) throws IOException {
+        dis.skip(bytes);
     }
 }
