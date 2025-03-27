@@ -37,41 +37,13 @@ public class IOMethods {
     }
     
     /**
-     * Set string to a specified length, adds " " if it is smaller than length
-     * 
-     * @param oldString The string to change length of
-     * @param length The length to enlarge or cut down to
-     * @return The new string with the specified length
-     */
-    public static String setStringToLength(String oldString, int length) {
-        String newString;
-        
-        if (oldString.length() > length) {
-            newString = oldString.substring(0, length);
-        } else if (oldString.length() < length) {
-            StringBuilder sb = new StringBuilder(oldString);
-            
-            while (sb.length() < length) {
-                sb.append(" ");
-            }
-            
-            return sb.toString();
-            
-        } else {
-            newString = oldString;
-        }
-        
-        return newString;
-    }
-    
-    /**
      * Set string to a specified length, adds [null] if it is smaller than length
      * 
      * @param oldString The string to change length of
      * @param length The length to enlarge or cut down to
      * @return The new string with the specified length
      */
-    public static String setStringToNullLength(String oldString, int length) {
+    public static String setStringToLength(String oldString, int length) {
         String newString;
         
         if (oldString.length() > length) {
