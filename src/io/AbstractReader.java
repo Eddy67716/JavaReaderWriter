@@ -84,7 +84,7 @@ public abstract class AbstractReader implements IReadable {
      * @param littleEndian Reads Little-endian if true
      */
     public AbstractReader(boolean littleEndian) {
-        this("", false);
+        this("", littleEndian);
     }
 
     /**

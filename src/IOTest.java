@@ -71,7 +71,7 @@ public class IOTest {
         try {
 
             // write
-            IWritable writer = new RandomReaderWriter("bits.dat", endianess);
+            IWritable writer = new ByteArrayWriter("bits.dat", endianess);
 
             writer.writeUTF8String(string1);
             writer.writeShort((short) uShort1);
@@ -137,6 +137,10 @@ public class IOTest {
             writer.writeArbitraryBitValue(fiveBitValue, (byte) 5);
             writer.writeArbitraryBitValue(fiveBitValue, (byte) 5);
             writer.writeArbitraryBitValue(fiveBitValue, (byte) 5);
+            writer.writeArbitraryBitValue(sixBitValue, (byte) 6);
+            writer.writeArbitraryBitValue(sixBitValue, (byte) 6);
+            writer.writeArbitraryBitValue(sixBitValue, (byte) 6);
+            writer.writeArbitraryBitValue(sixBitValue, (byte) 6);
             writer.writeArbitraryBitValue(sevenBitValueOne, (byte) 7);
             writer.writeArbitraryBitValue(sevenBitValueOne, (byte) 7);
             writer.writeArbitraryBitValue(sevenBitValueOne, (byte) 7);
@@ -165,7 +169,7 @@ public class IOTest {
             writer.writeArbitraryBitValue(twelveBitValueOne, (byte) 12);
             writer.writeArbitraryBitValue(twoBitValueOne, (byte) 2);
             writer.writeArbitraryBitValue(fiveBitValueTwo, (byte) 5);
-            writer.writeShort((short)uShort2);
+            writer.writeArbitraryBitValue(uShort2, (byte)16);
             writer.writeArbitraryBitValue(sevenBitValueTwo, (byte) 7);
 
             //writer.byteAlign();
@@ -180,7 +184,7 @@ public class IOTest {
 
         try {
             // read method variabes
-            IReadable reader = new RandomReaderWriter("bits.dat", endianess);
+            IReadable reader = new ByteArrayReader("bits.dat", endianess);
             String readString;
             long readValue;
             int readInt;
@@ -622,6 +626,34 @@ public class IOTest {
                         + fiveBitValue + ". ");
             } else {
                 System.out.println(fiveBitValue);
+            }
+            readValue = reader.getArbitraryBitValue((byte) 6, false);
+            if (readValue != sixBitValue) {
+                System.out.println("Error, " + readValue + " is not equal to :"
+                        + sixBitValue + ". ");
+            } else {
+                System.out.println(sixBitValue);
+            }
+            readValue = reader.getArbitraryBitValue((byte) 6, false);
+            if (readValue != sixBitValue) {
+                System.out.println("Error, " + readValue + " is not equal to :"
+                        + sixBitValue + ". ");
+            } else {
+                System.out.println(sixBitValue);
+            }
+            readValue = reader.getArbitraryBitValue((byte) 6, false);
+            if (readValue != sixBitValue) {
+                System.out.println("Error, " + readValue + " is not equal to :"
+                        + sixBitValue + ". ");
+            } else {
+                System.out.println(sixBitValue);
+            }
+            readValue = reader.getArbitraryBitValue((byte) 6, false);
+            if (readValue != sixBitValue) {
+                System.out.println("Error, " + readValue + " is not equal to :"
+                        + sixBitValue + ". ");
+            } else {
+                System.out.println(sixBitValue);
             }
             readValue = reader.getArbitraryBitValue((byte) 7, false);
             if (readValue != sevenBitValueOne) {
