@@ -19,8 +19,8 @@ public class IOMethods {
      * Reverses the byte order of an array of bytes for converting big to little
      * endian or vice versa
      * 
-     * @param oldArray The array of bytes to reverse
-     * @return The reversed array of bytes
+     * @param array The array of bytes to reverse
+     * @param length length of array area to be flipped
      */
     public static void reverseEndian(byte[] array, int length) {
 
