@@ -5,15 +5,10 @@
  */
 package io;
 
-import static io.IOMethods.reverseEndian;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  *
@@ -97,6 +92,11 @@ public class Reader extends AbstractReader {
     @Override
     protected byte readByte() throws IOException {
         return dis.readByte();
+    }
+
+    @Override
+    protected void readBytes(byte[] byteArray, int length) throws IOException {
+        dis.read(byteArray, 0, length);
     }
 
     @Override

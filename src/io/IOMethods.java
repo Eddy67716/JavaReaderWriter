@@ -22,18 +22,14 @@ public class IOMethods {
      * @param oldArray The array of bytes to reverse
      * @return The reversed array of bytes
      */
-    public static byte[] reverseEndian(byte[] oldArray) {
-
-        // new array
-        byte[] newArray = new byte[oldArray.length];
+    public static void reverseEndian(byte[] array, int length) {
 
         // reverse the order of byes
-        for (int i = 0, j = oldArray.length - 1; i < oldArray.length; i++, j--) {
-            newArray[i] = oldArray[j];
+        for (int i = 0, j = length - 1; i < length / 2; i++, j--) {
+            byte value = array[j];
+            array[j] = array[i];
+            array[i] = value;
         }
-
-        // return the new bytes
-        return newArray;
     }
     
     /**

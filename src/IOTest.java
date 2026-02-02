@@ -25,7 +25,7 @@ import java.io.IOException;
 public class IOTest {
 
     // values to write
-    private static boolean endianess = BIG_ENDIAN;
+    private static boolean endianess = LITTLE_ENDIAN;
     private static String string1 = "This is a string";
     private static byte byteValueOne = 127;
     private static byte byteValueTwo = -1;
@@ -71,7 +71,7 @@ public class IOTest {
         try {
 
             // write
-            IWritable writer = new Writer("bits.dat", endianess);
+            IWritable writer = new ByteArrayWriter("bits.dat", endianess);
 
             writer.writeUTF8String(string1);
             writer.writeShort((short) uShort1);
@@ -165,7 +165,7 @@ public class IOTest {
             writer.writeArbitraryBitValue(twelveBitValueOne, (byte) 12);
             writer.writeArbitraryBitValue(twoBitValueOne, (byte) 2);
             writer.writeArbitraryBitValue(fiveBitValueTwo, (byte) 5);
-            writer.writeArbitraryBitValue(uShort2, (byte)16);
+            writer.writeShort((short)uShort2);
             writer.writeArbitraryBitValue(sevenBitValueTwo, (byte) 7);
 
             //writer.byteAlign();
@@ -180,7 +180,7 @@ public class IOTest {
 
         try {
             // read method variabes
-            IReadable reader = new Reader("bits.dat", endianess);
+            IReadable reader = new ByteArrayReader("bits.dat", endianess);
             String readString;
             long readValue;
             int readInt;

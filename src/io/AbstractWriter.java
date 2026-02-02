@@ -18,9 +18,6 @@ package io;
 
 import static io.IOMethods.reverseEndian;
 import static io.Writer.AND_VALUES;
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -50,6 +47,10 @@ public abstract class AbstractWriter implements IWritable {
     private byte extraBitCount;
     // amount of extra offsetted bits
     private byte leadingBits;
+    // buffer array
+    private byte[] bufferArray;
+    // buffer
+    private ByteBuffer buffer;
     
     /**
      * The 2-args constructor used to write a file with a file name string.
@@ -62,6 +63,8 @@ public abstract class AbstractWriter implements IWritable {
             throws IOException {
         this.fileName = fileName;
         this.littleEndian = littleEndian;
+        bufferArray = new byte[8];
+        buffer = ByteBuffer.wrap(bufferArray);
     }
 
     /**
@@ -511,7 +514,7 @@ public abstract class AbstractWriter implements IWritable {
      */
     @Override
     public void writeDouble(double value) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
+        buffer.rewind();
         buffer.putDouble(value);
         appendBytes(buffer.array(), 0, 8);
     }
@@ -524,7 +527,7 @@ public abstract class AbstractWriter implements IWritable {
      */
     @Override
     public void writeLong(long value) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
+        buffer.rewind();
         buffer.putLong(value);
         appendBytes(buffer.array(), 0, 8);
     }
@@ -537,7 +540,7 @@ public abstract class AbstractWriter implements IWritable {
      */
     @Override
     public void writeFloat(float value) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(4);
+        buffer.rewind();
         buffer.putFloat(value);
         appendBytes(buffer.array(), 0, 4);
     }
@@ -550,7 +553,7 @@ public abstract class AbstractWriter implements IWritable {
      */
     @Override
     public void writeInt(int value) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(4);
+        buffer.rewind();
         buffer.putInt(value);
         appendBytes(buffer.array(), 0, 4);
     }
@@ -563,9 +566,16 @@ public abstract class AbstractWriter implements IWritable {
      */
     @Override
     public void writeIntAsTwentyFourBit(int value) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(4);
+        buffer.rewind();
         buffer.putInt(value);
-        appendBytes(buffer.array(), (littleEndian) ? 0 : 1, 3);
+        twentyFourBitShift();
+        appendBytes(buffer.array(), 0, 3);
+    }
+    
+    private void twentyFourBitShift() {
+        for (int i = 0; i < 3; i++) {
+            bufferArray[i] = bufferArray[i + 1];
+        }
     }
 
     /**
@@ -576,7 +586,7 @@ public abstract class AbstractWriter implements IWritable {
      */
     @Override
     public void writeShort(short value) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(2);
+        buffer.rewind();
         buffer.putShort(value);
         appendBytes(buffer.array(), 0, 2);
     }
@@ -664,7 +674,7 @@ public abstract class AbstractWriter implements IWritable {
         if (littleEndian) {
 
             // reverse the order of bytes
-            bytesToAppend = reverseEndian(bytesToAppend);
+            reverseEndian(bytesToAppend, length);
         }
 
         // adjust file position
@@ -674,7 +684,7 @@ public abstract class AbstractWriter implements IWritable {
         if (!ignoreOffset && leadingBits != 0) {
 
             // bitshift bytes and add leadingBits
-            for (int i = 0; i < bytesToAppend.length; i++) {
+            for (int i = 0; i < length; i++) {
 
                 // bit shift a byte
                 bytesToAppend[i] = manageBitOffset(bytesToAppend[i],
@@ -764,7 +774,7 @@ public abstract class AbstractWriter implements IWritable {
                     = (byte) (value & AND_VALUES[bitCount]);
 
             // bit shift right
-            value = (byte) ((int) value >>> bitCount);
+            value = (byte) ((int) (value & 0xff) >>> bitCount);
 
             // set extra bit count
             extraBitCount = bitCount;

@@ -113,6 +113,19 @@ public class ByteArrayReader extends AbstractReader {
             throw (new EOFException("End of array reached."));
         }
     }
+    
+    @Override
+    protected void readBytes(byte[] array, int length) throws IOException {
+        int filePosition = (int) getFilePosition();
+        for (int i = 0; i < length; i++, filePosition++) {
+
+            if (filePosition >= fileBytes.length) {
+                array[i] = 0;
+            } else {
+                array[i] = fileBytes[filePosition];
+            }
+        }
+    }
 
     @Override
     protected void readBytes(byte[] array) throws IOException {
