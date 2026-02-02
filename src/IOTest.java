@@ -71,7 +71,7 @@ public class IOTest {
         try {
 
             // write
-            IWritable writer = new ByteArrayWriter("bits.dat", endianess);
+            IWritable writer = new RandomReaderWriter("bits.dat", endianess);
 
             writer.writeUTF8String(string1);
             writer.writeShort((short) uShort1);
@@ -180,7 +180,7 @@ public class IOTest {
 
         try {
             // read method variabes
-            IReadable reader = new ByteArrayReader("bits.dat", endianess);
+            IReadable reader = new RandomReaderWriter("bits.dat", endianess);
             String readString;
             long readValue;
             int readInt;

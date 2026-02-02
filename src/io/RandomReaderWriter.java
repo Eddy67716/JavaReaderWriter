@@ -331,7 +331,6 @@ public class RandomReaderWriter implements IReadable, IWritable {
         boolean byteOverflowing = false;
         byte bitsToWrite;
         byte writtenBits = 0;
-        byte[] writeBytes;
 
         // extract bytes
         bytesToWrite = bits / 8;
@@ -381,9 +380,6 @@ public class RandomReaderWriter implements IReadable, IWritable {
             }
         }
 
-        // build bytes to write
-        writeBytes = new byte[bytesToWrite];
-
         // write in little endain order
         if (littleEndian) {
 
@@ -401,7 +397,7 @@ public class RandomReaderWriter implements IReadable, IWritable {
                         byte orValue = (byte) (value
                                 & AND_VALUES[8 - extraBitCount]);
 
-                        writeBytes[i] = (byte) (extraBits
+                        bufferArray[i] = (byte) (extraBits
                                 | (orValue << extraBitCount));
 
                         leadingBitsToWrite = newLeadingBits;
@@ -410,7 +406,7 @@ public class RandomReaderWriter implements IReadable, IWritable {
                     } else {
 
                         // append byte to writeBytes array
-                        writeBytes[i] = (byte) (value >>> writtenBits);
+                        bufferArray[i] = (byte) (value >>> writtenBits);
                     }
 
                     // subtract 8 to bit shift to next byte to write
@@ -426,7 +422,7 @@ public class RandomReaderWriter implements IReadable, IWritable {
                 } else if (leadingBitsToWrite == 8) {
 
                     // values that are a byte
-                    writeBytes[i] = (byte) ((value << extraBitCount)
+                    bufferArray[i] = (byte) ((value << extraBitCount)
                             | extraBits);
 
                     extraBitCount = 0;
@@ -439,7 +435,7 @@ public class RandomReaderWriter implements IReadable, IWritable {
                     byte orValue = (byte) (value
                             & AND_VALUES[8 - extraBitCount]);
 
-                    writeBytes[i] = (byte) (extraBits
+                    bufferArray[i] = (byte) (extraBits
                             | (orValue << (extraBitCount)));
 
                     leadingBitsToWrite -= 8;
@@ -454,7 +450,7 @@ public class RandomReaderWriter implements IReadable, IWritable {
             littleEndian = false;
 
             // write the bytes
-            appendBytes(writeBytes, 0, writeBytes.length, true);
+            appendBytes(bufferArray, 0, bytesToWrite, true);
 
             // set little endian back to true
             littleEndian = true;
@@ -505,7 +501,7 @@ public class RandomReaderWriter implements IReadable, IWritable {
                         byte orValue = (byte) (value >>> (bits - (8
                                 - extraBitCount)) & AND_VALUES[8 - extraBitCount]);
 
-                        writeBytes[i] = (byte) ((extraBits << (8 - extraBitCount))
+                        bufferArray[i] = (byte) ((extraBits << (8 - extraBitCount))
                                 | orValue);
 
                         leadingBitsToWrite = newLeadingBits;
@@ -514,12 +510,12 @@ public class RandomReaderWriter implements IReadable, IWritable {
                     } else {
 
                         // append byte to writeBytes array
-                        writeBytes[i] = (byte) (value >>> bitsToWrite);
+                        bufferArray[i] = (byte) (value >>> bitsToWrite);
                     }
                 } else if (leadingBitsToWrite == 8) {
 
                     // values that are a byte
-                    writeBytes[i] = (byte) (value | (extraBits << leadingBitsToWrite
+                    bufferArray[i] = (byte) (value | (extraBits << leadingBitsToWrite
                             - extraBitCount));
 
                     extraBitCount = 0;
@@ -532,7 +528,7 @@ public class RandomReaderWriter implements IReadable, IWritable {
                     byte orValue = (byte) ((value & 0xff) >>> (bits
                             - (8 - extraBitCount)) & AND_VALUES[8 - extraBitCount]);
 
-                    writeBytes[i] = (byte) ((extraBits << (8 - extraBitCount))
+                    bufferArray[i] = (byte) ((extraBits << (8 - extraBitCount))
                             | orValue);
 
                     // subtract 8 from leading bits
@@ -543,7 +539,7 @@ public class RandomReaderWriter implements IReadable, IWritable {
             }
 
             // write the bytes
-            appendBytes(writeBytes, 0, writeBytes.length, true);
+            appendBytes(bufferArray, 0, bytesToWrite, true);
 
             // deal with extra bits for later
             if (bitsToWrite > 0 && leadingBitsToWrite != 0) {
