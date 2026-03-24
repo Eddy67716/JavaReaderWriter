@@ -766,9 +766,6 @@ public abstract class AbstractReader implements IReadable {
         // and value to make sure it's unsigned
         returnValue = (short) (0x00ff & returnValue);
 
-        // increment file position
-        filePosition++;
-
         return returnValue;
     }
 
