@@ -4,13 +4,10 @@
  */
 package io;
 
-import static io.IOMethods.reverseEndian;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,9 +17,6 @@ import java.util.List;
  * @author Edward Jenkins © 2021-2023
  */
 public class ByteArrayWriter extends AbstractWriter {
-
-    // constants
-    public static final byte[] AND_VALUES = {0, 1, 3, 7, 15, 31, 63, 127};
 
     // instance variables
     // the data output stream
@@ -104,7 +98,7 @@ public class ByteArrayWriter extends AbstractWriter {
      * Resets the byte array
      */
     public void resetByteArray() {
-        byteArray = new LinkedList<>();
+        byteArray.clear();
     }
 
     /**

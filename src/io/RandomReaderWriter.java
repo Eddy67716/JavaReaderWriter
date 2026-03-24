@@ -1142,7 +1142,7 @@ public class RandomReaderWriter implements IReadable, IWritable {
     public short getUByteAsShort() throws IOException {
 
         // get byte
-        byte convertedByte = raf.readByte();
+        byte convertedByte = getByte();
 
         short returnValue = convertedByte;
 

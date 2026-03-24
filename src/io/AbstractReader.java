@@ -759,7 +759,7 @@ public abstract class AbstractReader implements IReadable {
     public short getUByteAsShort() throws IOException {
 
         // get byte
-        byte convertedByte = readByte();
+        byte convertedByte = getByte();
 
         short returnValue = convertedByte;
 

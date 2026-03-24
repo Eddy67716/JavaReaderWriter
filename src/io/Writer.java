@@ -55,52 +55,6 @@ public class Writer extends AbstractWriter {
     }
     
     /**
-     * Writes a byte string to file.
-     *
-     * @param outputString string to output.
-     * @throws IOException
-     */
-    @Override
-    public void writeByteString(String outputString) throws IOException {
-
-        if (getLeadingBits() != 0) {
-            int stringLength = outputString.length();
-            for (int i = 0; i < stringLength; i++) {
-                writeByte((byte) outputString.charAt(i));
-            }
-        } else {
-            dos.writeBytes(outputString);
-            if (isBuildingCheckByteStream() && getCheckByteStreamList() != null) {
-                int stringLength = outputString.length();
-                for (int i = 0; i < stringLength; i++) {
-                    getCheckByteStreamList().add((byte) outputString.charAt(i));
-                }
-            }
-            incrementFilePosition(outputString.length());
-        }
-    }
-
-    /**
-     * Writes a 2-byte char string to file.
-     *
-     * @param outputString string to output
-     * @throws IOException
-     */
-    @Override
-    public void writeCharString(String outputString) throws IOException {
-
-        if (getLeadingBits() != 0) {
-            int stringLength = outputString.length();
-            for (int i = 0; i < stringLength; i++) {
-                writeShort((short) outputString.charAt(i));
-            }
-        } else {
-            dos.writeChars(outputString);
-            incrementFilePosition(outputString.length() * 2);
-        }
-    }
-    
-    /**
      * Closes the file by writing any extra bits and byte aligning then closing
      * the stream.
      *
